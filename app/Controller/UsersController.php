@@ -6,13 +6,15 @@ class UsersController extends AppController {
 
 	public function index()
 	{
+		parent::checarLogin();
 		$this->set('users', $this->User->find('all'));
 	}
 
 	public function add()
 	{
+		parent::checarLogin();
 		if ($this->request->is('post')) {
-			$this->request->data["User"]["password"] = $this->request->data["User"]["password"];
+			$this->request->data["User"]["password"] = md5($this->request->data["User"]["password"]);
             if ($this->User->save($this->request->data)) {
                 $this->Flash->success('Usuário adicionado com sucesso!');
                 $this->redirect(array('action' => 'index'));
@@ -21,6 +23,7 @@ class UsersController extends AppController {
 	}
 
 	function edit($id = null) {
+		parent::checarLogin();
 	    $this->User->id = $id;
 	    $user;
 	    if ($this->request->is('get')) {
@@ -28,7 +31,7 @@ class UsersController extends AppController {
 	        var_dump($user);
 	    } else {
 	    	if ($this->User->findById($id)["User"]["password"] != $this->request->data["User"]["password"]) {
-				$this->request->data["User"]["password"] = $this->request->data["User"]["password"];
+				$this->request->data["User"]["password"] = md5($this->request->data["User"]["password"]);
 	    	}
 	        if ($this->User->save($this->request->data)) {
 	            $this->Flash->success('Usuário atualizado com sucesso.');
@@ -44,5 +47,24 @@ class UsersController extends AppController {
 	        $this->Flash->success('Usuário deletado com sucesso.');
 	        $this->redirect(array('action' => 'index'));
 	    }
+	}
+
+	public function login()
+	{
+		if($this->request->is('post')){
+			$data = $this->request->data['User'];
+			$usuario = $this->User->find('first', array('conditions' => array('email' => $data['email'])))["User"];
+			if($usuario['email'] == $data['email'] && $usuario['password'] == md5($data['password'])){
+				$this->Session->write('userId', $usuario['id']);
+				$this->Session->write('email', $usuario['email']);
+				$this->Session->write('password', md5($usuario['password']));
+				$this->redirect(array('action' => 'index'));
+			}
+		}
+	}
+	public function logout()
+	{
+		$this->Session->destroy();
+		$this->redirect(array('action' => 'index'));
 	}
 }

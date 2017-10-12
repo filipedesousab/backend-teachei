@@ -1,5 +1,6 @@
 <h1>Pagina Users</h1>
 
+<p><?php echo $this->Html->link('Logout', array('action' => 'logout')); ?></p>
 <p><?php echo $this->Html->link("Adicionar um Usuario", array('action' => 'add'));?></p>
 
 <table>
